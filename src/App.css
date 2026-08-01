@@ -1,0 +1,79 @@
+.app-header {
+  background: var(--brand-dark);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.app-header-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0.7rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  color: #fff;
+}
+
+.app-logo {
+  border-radius: 50%;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.app-title-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.app-title-text strong {
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+.app-title-text span {
+  font-size: 0.7rem;
+  color: var(--brand-gold);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.app-nav {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.app-nav a {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.4rem 0.55rem;
+  border-radius: 6px;
+}
+
+.app-nav a.active,
+.app-nav a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.page-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
