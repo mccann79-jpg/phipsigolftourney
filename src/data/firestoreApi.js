@@ -3,13 +3,19 @@ import { db, authReady } from '../firebase'
 import { GROUPS } from './course'
 
 const TEAMS_COL = 'teams'
+const KNOWN_TEAM_IDS = new Set(GROUPS.map((g) => g.id))
 
 export function subscribeTeams(onChange, onError) {
   const ref = collection(db, TEAMS_COL)
   return onSnapshot(
     ref,
     (snap) => {
-      const teams = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+      const teams = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        // Ignore anything that isn't one of the 7 tournament groups, so a
+        // stray document can't surface as a phantom team in the list or on
+        // the leaderboard.
+        .filter((t) => KNOWN_TEAM_IDS.has(t.id))
       teams.sort((a, b) => a.group - b.group)
       onChange(teams)
     },
@@ -17,13 +23,18 @@ export function subscribeTeams(onChange, onError) {
   )
 }
 
-// Populates the 7 tournament teams from src/data/course.js the first time
-// anyone loads the app with an empty `teams` collection. Safe to call more
-// than once — it always writes the same fixed document IDs.
-export async function ensureTeamsSeeded() {
+// Creates any of the 7 tournament groups that don't exist yet, from the
+// roster in src/data/course.js. Idempotent: teams that already exist are
+// left completely untouched, so this can never clobber live scores or an
+// in-progress scorekeeper claim.
+export async function ensureTeamsSeeded(existingIds = []) {
   await authReady
+  const have = new Set(existingIds)
+  const missing = GROUPS.filter((g) => !have.has(g.id))
+  if (missing.length === 0) return
+
   const batch = writeBatch(db)
-  for (const g of GROUPS) {
+  for (const g of missing) {
     const ref = doc(db, TEAMS_COL, g.id)
     batch.set(ref, {
       group: g.group,

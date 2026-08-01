@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { subscribeTeams, ensureTeamsSeeded } from '../data/firestoreApi'
 import { isFirebaseConfigured, authReady } from '../firebase'
+import { GROUPS } from '../data/course'
+
+const TOTAL_GROUPS = GROUPS.length
 
 export function useTeams() {
   const [teams, setTeams] = useState([])
@@ -43,9 +46,12 @@ export function useTeams() {
       (t) => {
         setTeams(t)
         setLoading(false)
-        if (t.length === 0 && !seedAttempted.current) {
+        // Seed whatever's missing, not just when the collection is totally
+        // empty — self-heals from a partial or manually-edited collection
+        // instead of getting permanently stuck below 7 teams.
+        if (t.length < TOTAL_GROUPS && !seedAttempted.current) {
           seedAttempted.current = true
-          ensureTeamsSeeded().catch((err) => {
+          ensureTeamsSeeded(t.map((team) => team.id)).catch((err) => {
             console.error('Auto-seed failed', err)
             const code = err.code || 'unknown'
             // Seeding awaits sign-in, so an auth failure surfaces here too —
