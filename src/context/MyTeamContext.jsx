@@ -1,5 +1,10 @@
 import { createContext, useCallback, useContext, useState } from 'react'
 
+// `myTeamId` is this device's followed team — which scorecard the Scorecard
+// tab defaults to and which row is highlighted on the Leaderboard. It's
+// independent of scorekeeper status (see useAuthUid + team.claimedByUid in
+// TeamView.jsx): you can follow a team without ever claiming it, or claim a
+// team on a device that isn't following it.
 const TEAM_KEY = 'kak-my-team-id'
 const NAME_KEY = 'kak-my-name'
 

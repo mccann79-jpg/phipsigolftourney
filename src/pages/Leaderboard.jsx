@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTeams } from '../hooks/useTeams'
+import { useMyTeam } from '../context/MyTeamContext'
 import Scorecard from '../components/Scorecard'
 import { netSummary, formatToPar } from '../data/scoring'
 import { HOLES } from '../data/course'
@@ -23,6 +24,7 @@ function rank(teams) {
 
 export default function Leaderboard() {
   const { teams, loading, error } = useTeams()
+  const { myTeamId } = useMyTeam()
   const [expanded, setExpanded] = useState(null)
   const ranked = useMemo(() => rank(teams), [teams])
 
@@ -50,9 +52,13 @@ export default function Leaderboard() {
             const isOpen = expanded === team.id
             const started = summary.thru > 0
             const complete = summary.thru === summary.holesTotal
+            const isMine = team.id === myTeamId
             return (
               <div key={team.id} className="lb-group">
-                <button className="lb-row lb-row-btn" onClick={() => setExpanded(isOpen ? null : team.id)}>
+                <button
+                  className={`lb-row lb-row-btn ${isMine ? 'lb-row-mine' : ''}`}
+                  onClick={() => setExpanded(isOpen ? null : team.id)}
+                >
                   <span className="lb-pos">{started ? i + 1 : '—'}</span>
                   <span className="lb-team">
                     Group {team.group}

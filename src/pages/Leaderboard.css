@@ -33,6 +33,10 @@
   background: var(--surface-alt);
 }
 
+.lb-row-mine {
+  background: var(--brand-green-soft);
+}
+
 .lb-pos {
   font-weight: 700;
   color: var(--text-muted);

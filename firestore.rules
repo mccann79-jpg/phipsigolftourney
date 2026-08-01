@@ -23,15 +23,49 @@ rules_version = '2';
 // The PIN is a UI speed bump only, not something these rules can check, so
 // this path is intentionally open to any visitor; it can only release a
 // claim, never set one or touch scores, to keep the blast radius small.
+//
+// One session can't be scorekeeper for two teams at once: claiming a team
+// checks the other 6 fixed group docs for an existing claim under the same
+// `claimedByUid` and rejects the write if one is found. There are only ever
+// 7 teams, so this is spelled out explicitly rather than looped. This uses
+// get() only (not exists() + get()) to stay under Firestore's ~10
+// document-access-call budget per request — 6 other docs at 2 calls each
+// would be 12 and silently deny every claim. get() alone assumes all 7 docs
+// already exist, which auto-seeding guarantees before any claim UI renders.
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isClaimEdit() {
+    function isClaiming() {
+      return resource.data.claimedBy == null && request.resource.data.claimedBy != null;
+    }
+
+    function heldElsewhere(otherId) {
+      // Freshly-seeded, never-claimed docs only have `claimedBy: null` —
+      // `claimedByUid` doesn't exist on them until a first claim sets it, so
+      // this must use a null-safe accessor. A direct `.claimedByUid` field
+      // access throws "Property is undefined" on those docs, which Firestore
+      // treats as a rule evaluation error (auto-deny) — silently breaking
+      // every claim, not just the one being checked.
+      return get(/databases/$(database)/documents/teams/$(otherId)).data.get('claimedByUid', null) == request.auth.uid;
+    }
+
+    function alreadyHoldsAClaim(teamId) {
+      return (teamId != 'group-1' && heldElsewhere('group-1')) ||
+        (teamId != 'group-2' && heldElsewhere('group-2')) ||
+        (teamId != 'group-3' && heldElsewhere('group-3')) ||
+        (teamId != 'group-4' && heldElsewhere('group-4')) ||
+        (teamId != 'group-5' && heldElsewhere('group-5')) ||
+        (teamId != 'group-6' && heldElsewhere('group-6')) ||
+        (teamId != 'group-7' && heldElsewhere('group-7'));
+    }
+
+    function isClaimEdit(teamId) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scores', 'claimedBy', 'claimedByUid', 'updatedAt']) &&
-        (resource.data.claimedBy == null || resource.data.claimedByUid == request.auth.uid);
+        (resource.data.claimedBy == null || resource.data.get('claimedByUid', null) == request.auth.uid) &&
+        (!isClaiming() || !alreadyHoldsAClaim(teamId));
     }
 
     function isClearingClaim() {
@@ -43,7 +77,7 @@ service cloud.firestore {
     match /teams/{teamId} {
       allow read: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && (isClaimEdit() || isClearingClaim());
+      allow update: if isSignedIn() && (isClaimEdit(teamId) || isClearingClaim());
       allow delete: if false;
     }
 

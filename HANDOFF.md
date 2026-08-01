@@ -64,8 +64,13 @@ Club, Overland Park KS, blue tees, par 71).
 - Player opens the site → picks their team → taps their name → becomes that team's **scorekeeper**
 - Only the scorekeeper can enter scores for their team; everyone else sees it live
 - Scorekeeper can **stop scoring** to free up the role for a teammate; nobody else can take over
-  a team while it's claimed — enforced by `firestore.rules`, not just hidden in the UI
-- Returning visits **skip straight to your team's scorecard** (team stored in `localStorage`)
+  a team while it's claimed, and one device can't be scorekeeper for two teams at once — both
+  enforced by `firestore.rules`, not just hidden in the UI
+- **Following a team** (tap "This is my team") is separate from scoring for it — sets which team
+  the Scorecard tab defaults to and which row is highlighted on the Leaderboard, with no Firestore
+  write and no scorekeeper claim involved. See `useAuthUid.js` / `MyTeamContext.jsx`.
+- Returning visits **skip straight to your followed team's scorecard** (`localStorage`, not tied
+  to scorekeeper status)
 - Scores are **capped at bogey** (par + 1) per tournament rules — enforced in the entry sheet
 - **Group 6 gets a 3-stroke advantage**, applied automatically to net score and leaderboard rank
 - **No admin panel, no login.** Roster/reset changes are made by editing code or the Firebase console
@@ -83,10 +88,11 @@ Firebase (Firestore + anonymous Auth). Deployed by GitHub Actions to GitHub Page
 | `src/data/scoring.js` | `netSummary`, `formatToPar`, birdie/par/bogey labels. Net = gross − `strokeAdvantage`. |
 | `src/data/firestoreApi.js` | All Firestore reads/writes: `subscribeTeams`, `ensureTeamsSeeded`, `claimTeam`, `leaveTeam`, `setHoleScore`, `clearHoleScore`. |
 | `src/hooks/useTeams.js` | Live team subscription + auto-seed + error/timeout handling. |
-| `src/context/MyTeamContext.jsx` | Which team *this device* is scorekeeper for (`localStorage`). |
-| `src/pages/Home.jsx` | Scorecard tab root — redirects to your team if claimed, else shows team list. `?browse` mode via `/teams`. |
-| `src/pages/TeamView.jsx` | The scorecard: score entry, claim / stop scoring. |
-| `src/pages/Leaderboard.jsx` | Ranked by net-to-par, expandable per-team scorecards. |
+| `src/hooks/useAuthUid.js` | This device's anon-auth uid, once sign-in settles. Compared against `team.claimedByUid` to derive real scorekeeper status. |
+| `src/context/MyTeamContext.jsx` | Which team *this device* **follows** (`localStorage`) — independent of scorekeeper status. |
+| `src/pages/Home.jsx` | Scorecard tab root — redirects to your followed team if set, else shows team list. `?browse` mode via `/teams`. |
+| `src/pages/TeamView.jsx` | The scorecard: score entry, claim / stop scoring / follow. `canEdit` comes from `useAuthUid` + `claimedByUid`, not the followed-team preference. |
+| `src/pages/Leaderboard.jsx` | Ranked by net-to-par, expandable per-team scorecards, followed team highlighted. |
 | `src/pages/Info.jsx` | Course address, tee times, rules, admin section. |
 | `src/components/AdminSection.jsx` | PIN-gated panel (bottom of Info tab) for clearing a stuck scorekeeper claim without console access. **Not a real access boundary** — see the security note in `README.md`. |
 | `src/adminConfig.js` | The admin PIN (`ADMIN_PIN`), committed. |
@@ -113,10 +119,16 @@ One collection, `teams`, with fixed document IDs `group-1` … `group-7`:
 Security model: everyone is signed in **anonymously**; that's enough for rules to tell "a
 visitor" from "nobody". Any signed-in visitor can create teams (auto-seeding). Once a team is
 claimed, only the session whose uid matches `claimedByUid` can edit `scores` or `claimedBy` again
-— this is what stops another visitor from taking over an already-claimed team. The one exception:
-any signed-in visitor can *clear* a claim (`claimedBy`/`claimedByUid` → null, nothing else),
-which backs the admin PIN panel in the Info tab — see `src/adminConfig.js` and the security note
-in `README.md` for why that's intentionally not a hard boundary. Roster fields are **immutable
+— this is what stops another visitor from taking over an already-claimed team. Claiming a team
+also checks the other 6 fixed group docs for a matching `claimedByUid` and rejects the write if
+found, so one session can't hold two teams at once — see `alreadyHoldsAClaim()` in
+`firestore.rules`. That check uses `get()` only, not `exists() + get()`: 6 docs × 2 calls would
+hit ~12 of the ~10 document-access calls Firestore allows per rule evaluation and silently deny
+every claim (this happened during testing — see git history on `firestore.rules` if it recurs).
+The one exception to the claim lock: any signed-in visitor can *clear* a claim
+(`claimedBy`/`claimedByUid` → null, nothing else), which backs the admin PIN panel in the Info tab
+— see `src/adminConfig.js` and the security note in `README.md` for why that's intentionally not a
+hard boundary. Roster fields are **immutable
 after creation** and deletes are blocked. There is deliberately no real admin role — this is a
 trusted group of friends, not a hardened public app.
 

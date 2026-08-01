@@ -48,7 +48,7 @@ export default function AdminSection({ teams }) {
           <button className="btn btn-sm" type="submit">
             Unlock
           </button>
-          {error && <p className="muted admin-error">Wrong PIN.</p>}
+          {error && <p className="muted error-text">Wrong PIN.</p>}
         </form>
       ) : (
         <div className="stack">

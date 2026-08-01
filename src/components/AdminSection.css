@@ -13,11 +13,6 @@
   max-width: 8rem;
 }
 
-.admin-error {
-  width: 100%;
-  color: var(--danger);
-}
-
 .admin-team-row {
   display: flex;
   align-items: center;

@@ -14,6 +14,11 @@
   color: inherit;
 }
 
+.team-card-mine {
+  background: var(--brand-green-soft);
+  border-color: var(--brand-green);
+}
+
 .team-card-top {
   display: flex;
   align-items: flex-start;

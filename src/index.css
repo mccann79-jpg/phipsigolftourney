@@ -159,6 +159,10 @@ button {
   font-size: 0.85rem;
 }
 
+.error-text {
+  color: var(--danger);
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
