@@ -20,7 +20,10 @@ export function useTeams() {
         setLoading(false)
         if (t.length === 0 && !seedAttempted.current) {
           seedAttempted.current = true
-          ensureTeamsSeeded().catch((err) => console.error('Auto-seed failed', err))
+          ensureTeamsSeeded().catch((err) => {
+            console.error('Auto-seed failed', err)
+            setError(`seed-failed:${err.code || 'unknown'}`)
+          })
         }
       },
       (err) => {

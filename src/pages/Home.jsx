@@ -5,9 +5,9 @@ import { COURSE, TOURNAMENT } from '../data/course'
 import logo from '../assets/kak-logo-192.png'
 import './Home.css'
 
-function TeamCard({ team }) {
+function TeamCard({ team, isMine }) {
   return (
-    <Link to={`/team/${team.id}`} className="card team-card">
+    <Link to={`/team/${team.id}`} className={`card team-card ${isMine ? 'team-card-mine' : ''}`}>
       <div className="team-card-top">
         <h3>
           Group {team.group}
@@ -25,14 +25,14 @@ function TeamCard({ team }) {
   )
 }
 
-// The Scorecard tab's root: if this device already claimed a team, jump
-// straight to its scorecard. Otherwise, show the roster so someone can pick
-// their team and name.
-export default function Home() {
+// The Scorecard tab's root. At '/', a device that already claimed a team
+// jumps straight to its scorecard; '/teams' always shows the full list so
+// you can switch teams or view someone else's card.
+export default function Home({ browse = false }) {
   const { teams, loading, error } = useTeams()
   const { myTeamId } = useMyTeam()
 
-  if (!loading && myTeamId && teams.some((t) => t.id === myTeamId)) {
+  if (!browse && !loading && myTeamId && teams.some((t) => t.id === myTeamId)) {
     return <Navigate to={`/team/${myTeamId}`} replace />
   }
 
@@ -50,11 +50,26 @@ export default function Home() {
 
       {loading && <p className="muted">Loading teams…</p>}
       {error === 'not-configured' && <p className="muted">Firebase isn't configured yet — see README.md.</p>}
-      {!loading && error && error !== 'not-configured' && <p className="muted">Couldn't load teams: {error}</p>}
+      {error?.startsWith('seed-failed') && (
+        <div className="card stack">
+          <p>
+            <strong>Couldn't set up the tournament teams.</strong>
+          </p>
+          <p className="muted">
+            This usually means the Firestore security rules in the Firebase console are out of date
+            — paste the latest <code>firestore.rules</code> from the repo and publish, then reload
+            this page.
+          </p>
+          <p className="muted">({error.replace('seed-failed:', 'Firestore error: ')})</p>
+        </div>
+      )}
+      {!loading && error && error !== 'not-configured' && !error.startsWith('seed-failed') && (
+        <p className="muted">Couldn't load teams: {error}</p>
+      )}
       {!loading && !error && teams.length === 0 && <p className="muted">Setting up the tournament…</p>}
 
       {teams.map((team) => (
-        <TeamCard key={team.id} team={team} />
+        <TeamCard key={team.id} team={team} isMine={team.id === myTeamId} />
       ))}
     </div>
   )

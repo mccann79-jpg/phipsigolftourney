@@ -1,5 +1,5 @@
 import { collection, doc, onSnapshot, updateDoc, deleteField, serverTimestamp, writeBatch } from 'firebase/firestore'
-import { db } from '../firebase'
+import { db, authReady } from '../firebase'
 import { GROUPS } from './course'
 
 const TEAMS_COL = 'teams'
@@ -21,6 +21,7 @@ export function subscribeTeams(onChange, onError) {
 // anyone loads the app with an empty `teams` collection. Safe to call more
 // than once — it always writes the same fixed document IDs.
 export async function ensureTeamsSeeded() {
+  await authReady
   const batch = writeBatch(db)
   for (const g of GROUPS) {
     const ref = doc(db, TEAMS_COL, g.id)
@@ -44,6 +45,16 @@ export async function claimTeam(teamId, name) {
   const ref = doc(db, TEAMS_COL, teamId)
   await updateDoc(ref, {
     claimedBy: { name, claimedAt: Date.now() },
+    updatedAt: serverTimestamp(),
+  })
+}
+
+// Releases the scorekeeper role so anyone can pick it up again — used when
+// someone joins the wrong team by mistake.
+export async function leaveTeam(teamId) {
+  const ref = doc(db, TEAMS_COL, teamId)
+  await updateDoc(ref, {
+    claimedBy: null,
     updatedAt: serverTimestamp(),
   })
 }

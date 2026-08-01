@@ -25,6 +25,9 @@ everyone via Firebase.
   current scorekeeper can hand the role off to a teammate at any time (**Hand off to teammate**
   on their scorecard), and anyone can take over an already-claimed team if needed (e.g. the
   original phone died) via **That's not me — take over**.
+- Joined the wrong team? **Leave team** releases the scorekeeper role so anyone can pick it up
+  again, and sends you back to the team list. **All teams** browses every group's scorecard
+  without giving up your own.
 - The next time the same phone opens the site, it jumps straight to that team's scorecard instead
   of showing the team list.
 

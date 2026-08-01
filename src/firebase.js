@@ -14,6 +14,14 @@ const firebaseConfig = {
 export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId)
 
 let app, auth, db
+let resolveAuthReady
+// Resolves once anonymous sign-in has actually completed. Writes that need
+// auth (like auto-seeding teams) should wait on this instead of firing
+// immediately on mount, otherwise they can lose the race against
+// signInAnonymously on a slow connection and fail with permission-denied.
+export const authReady = new Promise((resolve) => {
+  resolveAuthReady = resolve
+})
 
 if (isFirebaseConfigured) {
   app = initializeApp(firebaseConfig)
@@ -32,7 +40,10 @@ if (isFirebaseConfigured) {
   // without asking anyone to create an account or sign in.
   onAuthStateChanged(auth, (user) => {
     if (!user) signInAnonymously(auth).catch((err) => console.error('Anonymous sign-in failed', err))
+    else resolveAuthReady()
   })
+} else {
+  resolveAuthReady()
 }
 
 export { app, auth, db }

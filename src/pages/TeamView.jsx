@@ -1,17 +1,18 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useTeams } from '../hooks/useTeams'
 import { useMyTeam } from '../context/MyTeamContext'
 import Scorecard from '../components/Scorecard'
 import HoleEntrySheet from '../components/HoleEntrySheet'
 import ScoreBar from '../components/ScoreBar'
 import NamePicker from '../components/NamePicker'
-import { claimTeam, setHoleScore, clearHoleScore } from '../data/firestoreApi'
+import { claimTeam, leaveTeam, setHoleScore, clearHoleScore } from '../data/firestoreApi'
 import { netSummary } from '../data/scoring'
 import './TeamView.css'
 
 export default function TeamView() {
   const { teamId } = useParams()
+  const navigate = useNavigate()
   const { teams, loading } = useTeams()
   const { myTeamId, setMyTeamId, setMyName } = useMyTeam()
   const [selectedHole, setSelectedHole] = useState(null)
@@ -25,7 +26,7 @@ export default function TeamView() {
     return (
       <div className="container">
         <p>Team not found.</p>
-        <Link to="/">Back to teams</Link>
+        <Link to="/teams">Back to teams</Link>
       </div>
     )
   }
@@ -41,10 +42,20 @@ export default function TeamView() {
     setPickingName(false)
   }
 
+  // Wrong team: release the scorekeeper role and go back to the team list.
+  const leave = async () => {
+    await leaveTeam(team.id)
+    setMyTeamId(null)
+    navigate('/')
+  }
+
   return (
     <div className="container stack">
       <div className="page-title">
         <h1>Group {team.group}</h1>
+        <Link className="btn btn-sm" to="/teams">
+          All teams
+        </Link>
       </div>
       <p className="muted">
         {team.teeTime} tee time · {team.players.join(', ')}
@@ -83,9 +94,14 @@ export default function TeamView() {
       {canEdit && !pickingName && (
         <div className="card team-scoring-as">
           <span>Scoring as {team.claimedBy?.name}</span>
-          <button className="btn btn-sm" onClick={() => setPickingName(true)}>
-            Hand off to teammate
-          </button>
+          <div className="team-scoring-actions">
+            <button className="btn btn-sm" onClick={() => setPickingName(true)}>
+              Hand off to teammate
+            </button>
+            <button className="btn btn-sm btn-danger" onClick={leave}>
+              Leave team
+            </button>
+          </div>
         </div>
       )}
 
