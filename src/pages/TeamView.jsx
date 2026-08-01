@@ -42,7 +42,8 @@ export default function TeamView() {
     setPickingName(false)
   }
 
-  // Wrong team: release the scorekeeper role and go back to the team list.
+  // Stops scoring for this team: releases the scorekeeper role (a teammate
+  // can then claim it on their own phone) and goes back to the team list.
   const leave = async () => {
     await leaveTeam(team.id)
     setMyTeamId(null)
@@ -74,8 +75,7 @@ export default function TeamView() {
           {team.claimedBy ? (
             <p>
               <strong>{team.claimedBy.name}</strong> is scoring for this group. You're viewing live.
-              Only they can hand the role off — if their phone is stuck or lost, ask an organizer
-              to free it up in the Firebase console.
+              If you have an issue with scoring, or you are having trouble reassigning the scorer, contact Brendan McCann.
             </p>
           ) : (
             <>
@@ -95,27 +95,14 @@ export default function TeamView() {
         </div>
       )}
 
-      {canEdit && !pickingName && (
+      {canEdit && (
         <div className="card team-scoring-as">
           <span>Scoring as {team.claimedBy?.name}</span>
           <div className="team-scoring-actions">
-            <button className="btn btn-sm" onClick={() => setPickingName(true)}>
-              Hand off to teammate
-            </button>
             <button className="btn btn-sm btn-danger" onClick={leave}>
-              Leave team
+              Stop scoring
             </button>
           </div>
-        </div>
-      )}
-
-      {canEdit && pickingName && (
-        <div className="card stack">
-          <p className="muted">Hand scoring off to:</p>
-          <NamePicker players={team.players} currentName={team.claimedBy?.name} onSelect={pickName} />
-          <button className="btn btn-sm" onClick={() => setPickingName(false)}>
-            Cancel
-          </button>
         </div>
       )}
 

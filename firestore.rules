@@ -13,21 +13,37 @@ rules_version = '2';
 // stops another visitor from taking over a team that already has a
 // scorekeeper. Roster fields (players, teeTime, ghinAvg, strokeAdvantage)
 // can only be set at creation time, never changed afterward by a client — if
-// you need to edit the roster later, or free up a team whose scorekeeper is
-// stuck (lost phone, etc.), do it directly in the Firebase console, which
-// bypasses these rules entirely.
+// you need to edit the roster later, do it directly in the Firebase console,
+// which bypasses these rules entirely.
+//
+// The one deliberate exception: any signed-in visitor can CLEAR a claim
+// (set claimedBy/claimedByUid to null, nothing else) — this is what backs
+// the admin PIN section in the Info tab (src/adminConfig.js), for freeing up
+// a stuck scorekeeper from a phone on the course with no console access.
+// The PIN is a UI speed bump only, not something these rules can check, so
+// this path is intentionally open to any visitor; it can only release a
+// claim, never set one or touch scores, to keep the blast radius small.
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() {
       return request.auth != null;
     }
 
+    function isClaimEdit() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scores', 'claimedBy', 'claimedByUid', 'updatedAt']) &&
+        (resource.data.claimedBy == null || resource.data.claimedByUid == request.auth.uid);
+    }
+
+    function isClearingClaim() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimedBy', 'claimedByUid', 'updatedAt']) &&
+        request.resource.data.claimedBy == null &&
+        request.resource.data.claimedByUid == null;
+    }
+
     match /teams/{teamId} {
       allow read: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scores', 'claimedBy', 'claimedByUid', 'updatedAt']) &&
-        (resource.data.claimedBy == null || resource.data.claimedByUid == request.auth.uid);
+      allow update: if isSignedIn() && (isClaimEdit() || isClearingClaim());
       allow delete: if false;
     }
 

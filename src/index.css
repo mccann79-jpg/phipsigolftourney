@@ -176,6 +176,7 @@ button {
 
 input[type='text'],
 input[type='date'],
+input[type='password'],
 select {
   font: inherit;
   padding: 0.55rem 0.7rem;

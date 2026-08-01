@@ -1,0 +1,32 @@
+.admin-section h2 {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.admin-unlock {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.admin-unlock input {
+  max-width: 8rem;
+}
+
+.admin-error {
+  width: 100%;
+  color: var(--danger);
+}
+
+.admin-team-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.admin-team-row:first-child {
+  border-top: none;
+}

@@ -63,8 +63,8 @@ Club, Overland Park KS, blue tees, par 71).
 - Three tabs, fixed bottom nav, mobile-first: **Scorecard / Leaderboard / Info**
 - Player opens the site → picks their team → taps their name → becomes that team's **scorekeeper**
 - Only the scorekeeper can enter scores for their team; everyone else sees it live
-- Scorekeeper can **hand off to a teammate** or **leave team**; nobody else can take over a team
-  while it's claimed — enforced by `firestore.rules`, not just hidden in the UI
+- Scorekeeper can **stop scoring** to free up the role for a teammate; nobody else can take over
+  a team while it's claimed — enforced by `firestore.rules`, not just hidden in the UI
 - Returning visits **skip straight to your team's scorecard** (team stored in `localStorage`)
 - Scores are **capped at bogey** (par + 1) per tournament rules — enforced in the entry sheet
 - **Group 6 gets a 3-stroke advantage**, applied automatically to net score and leaderboard rank
@@ -85,9 +85,11 @@ Firebase (Firestore + anonymous Auth). Deployed by GitHub Actions to GitHub Page
 | `src/hooks/useTeams.js` | Live team subscription + auto-seed + error/timeout handling. |
 | `src/context/MyTeamContext.jsx` | Which team *this device* is scorekeeper for (`localStorage`). |
 | `src/pages/Home.jsx` | Scorecard tab root — redirects to your team if claimed, else shows team list. `?browse` mode via `/teams`. |
-| `src/pages/TeamView.jsx` | The scorecard: score entry, claim / hand off / leave / take over. |
+| `src/pages/TeamView.jsx` | The scorecard: score entry, claim / stop scoring. |
 | `src/pages/Leaderboard.jsx` | Ranked by net-to-par, expandable per-team scorecards. |
-| `src/pages/Info.jsx` | Course address, tee times, rules. |
+| `src/pages/Info.jsx` | Course address, tee times, rules, admin section. |
+| `src/components/AdminSection.jsx` | PIN-gated panel (bottom of Info tab) for clearing a stuck scorekeeper claim without console access. **Not a real access boundary** — see the security note in `README.md`. |
+| `src/adminConfig.js` | The admin PIN (`ADMIN_PIN`), committed. |
 | `firestore.rules` | **Must be published to the Firebase console manually.** |
 
 ### Firestore data model
@@ -102,16 +104,21 @@ One collection, `teams`, with fixed document IDs `group-1` … `group-7`:
   ghinAvg: 28,
   strokeAdvantage: 3,          // 0 for every group except 6
   claimedBy: { name: "Zach Webb", claimedAt: 1234567890 } | null,
+  claimedByUid: "abc123...",   // the claiming session's anon-auth uid, or null
   scores: { "1": 4, "2": 5 },  // hole number (string key) -> strokes
   updatedAt: <serverTimestamp>
 }
 ```
 
 Security model: everyone is signed in **anonymously**; that's enough for rules to tell "a
-visitor" from "nobody". Any signed-in visitor can create teams (auto-seeding) and update
-`scores` / `claimedBy` / `updatedAt`. Roster fields are **immutable after creation** and
-deletes are blocked. There is deliberately no admin role — this is a trusted group of friends,
-not a hardened public app.
+visitor" from "nobody". Any signed-in visitor can create teams (auto-seeding). Once a team is
+claimed, only the session whose uid matches `claimedByUid` can edit `scores` or `claimedBy` again
+— this is what stops another visitor from taking over an already-claimed team. The one exception:
+any signed-in visitor can *clear* a claim (`claimedBy`/`claimedByUid` → null, nothing else),
+which backs the admin PIN panel in the Info tab — see `src/adminConfig.js` and the security note
+in `README.md` for why that's intentionally not a hard boundary. Roster fields are **immutable
+after creation** and deletes are blocked. There is deliberately no real admin role — this is a
+trusted group of friends, not a hardened public app.
 
 ---
 

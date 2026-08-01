@@ -1,5 +1,6 @@
 import { useTeams } from '../hooks/useTeams'
 import { COURSE, TOURNAMENT, RULES, GROUPS } from '../data/course'
+import AdminSection from '../components/AdminSection'
 import './Info.css'
 
 export default function Info() {
@@ -58,6 +59,8 @@ export default function Info() {
           </div>
         ))}
       </div>
+
+      {teams.length > 0 && <AdminSection teams={teams} />}
     </div>
   )
 }

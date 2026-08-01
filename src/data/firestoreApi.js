@@ -65,8 +65,11 @@ export async function claimTeam(teamId, name) {
   })
 }
 
-// Releases the scorekeeper role so anyone can pick it up again — used when
-// someone joins the wrong team by mistake.
+// Releases the scorekeeper role so anyone can pick it up again — used by the
+// current scorekeeper stopping scoring, and by the admin panel (see
+// AdminSection.jsx) clearing someone else's stuck claim. firestore.rules
+// allows this specific write (clearing, not setting, claimedBy/claimedByUid)
+// from any signed-in visitor for that second case.
 export async function leaveTeam(teamId) {
   const ref = doc(db, TEAMS_COL, teamId)
   await updateDoc(ref, {

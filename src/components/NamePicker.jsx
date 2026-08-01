@@ -1,7 +1,6 @@
 import './NamePicker.css'
 
-// Tap-your-name picker used to claim an unclaimed team as scorekeeper, or
-// for the current scorekeeper to hand the role off to a teammate.
+// Tap-your-name picker used to claim an unclaimed team as scorekeeper.
 // `currentName`, if given, gets a checkmark so people can see who currently
 // holds the role.
 export default function NamePicker({ players, currentName, onSelect }) {
