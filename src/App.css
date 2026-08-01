@@ -19,16 +19,28 @@
 
 .app-title {
   display: flex;
-  flex-direction: column;
-  line-height: 1.15;
+  align-items: center;
+  gap: 0.55rem;
   text-decoration: none;
   color: #fff;
 }
-.app-title strong {
+
+.app-logo {
+  border-radius: 50%;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.app-title-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.app-title-text strong {
   font-size: 1rem;
   letter-spacing: 0.02em;
 }
-.app-title span {
+.app-title-text span {
   font-size: 0.7rem;
   color: var(--brand-gold);
   font-weight: 600;

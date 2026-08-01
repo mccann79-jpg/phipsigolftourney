@@ -36,6 +36,13 @@ function Nine({ title, holes, outPar, scores, onEdit, editable }) {
         </tr>
       </thead>
       <tbody>
+        <tr className="sc-row-yardage">
+          <td className="sc-label-col">Blue</td>
+          {holes.map((h) => (
+            <td key={h.hole}>{h.yardage}</td>
+          ))}
+          <td className="sc-total-col">{holes.reduce((s, h) => s + h.yardage, 0)}</td>
+        </tr>
         <tr className="sc-row-par">
           <td className="sc-label-col">Par</td>
           {holes.map((h) => (
@@ -43,12 +50,12 @@ function Nine({ title, holes, outPar, scores, onEdit, editable }) {
           ))}
           <td className="sc-total-col">{outPar}</td>
         </tr>
-        <tr className="sc-row-yardage">
-          <td className="sc-label-col">Blue</td>
+        <tr className="sc-row-hcp">
+          <td className="sc-label-col">Hcp</td>
           {holes.map((h) => (
-            <td key={h.hole}>{h.yardage}</td>
+            <td key={h.hole}>{h.menHcp}</td>
           ))}
-          <td className="sc-total-col">{holes.reduce((s, h) => s + h.yardage, 0)}</td>
+          <td className="sc-total-col"></td>
         </tr>
         <tr className="sc-row-score">
           <td className="sc-label-col">Score</td>

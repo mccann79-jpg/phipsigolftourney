@@ -5,6 +5,7 @@ import { useMyTeam } from '../context/MyTeamContext'
 import { useTournamentSettings } from '../hooks/useTournamentSettings'
 import { claimTeam } from '../data/firestoreApi'
 import { COURSE, TOURNAMENT } from '../data/course'
+import logo from '../assets/kak-logo-192.png'
 import './Home.css'
 
 function ClaimForm({ team, onDone }) {
@@ -110,6 +111,7 @@ export default function Home() {
   return (
     <div className="container stack">
       <div className="card stack hero-card">
+        <img src={logo} alt="KAK Invitational" className="hero-logo" width="96" height="96" />
         <h1>{settings.name || TOURNAMENT.name}</h1>
         <p className="muted">
           {TOURNAMENT.format} · {COURSE.tee.name} tees · {COURSE.name}

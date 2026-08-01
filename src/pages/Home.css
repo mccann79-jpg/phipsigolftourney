@@ -3,6 +3,10 @@
   align-items: center;
 }
 
+.hero-logo {
+  border-radius: 50%;
+}
+
 .hero-links {
   display: flex;
   gap: 0.5rem;

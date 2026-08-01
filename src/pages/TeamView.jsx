@@ -4,9 +4,9 @@ import { useTeams } from '../hooks/useTeams'
 import { useMyTeam } from '../context/MyTeamContext'
 import Scorecard from '../components/Scorecard'
 import HoleEntrySheet from '../components/HoleEntrySheet'
+import ScoreBar from '../components/ScoreBar'
 import { claimTeam, setHoleScore, clearHoleScore } from '../data/firestoreApi'
-import { netSummary, formatToPar } from '../data/scoring'
-import './TeamView.css'
+import { netSummary } from '../data/scoring'
 import './Home.css'
 
 export default function TeamView() {
@@ -55,17 +55,13 @@ export default function TeamView() {
       </div>
       <p className="muted">{team.teeTime} tee time · {team.players.join(', ')}</p>
 
-      <div className="card team-summary">
-        <div>
-          <span className="team-summary-num">{summary.thru ? formatToPar(summary.toPar) : '—'}</span>
-          <span className="muted"> thru {summary.thru}</span>
-        </div>
-        {team.strokeAdvantage > 0 && (
-          <div className="muted">
-            Net {summary.thru ? formatToPar(summary.netToPar) : '—'} (with {team.strokeAdvantage}-stroke advantage)
-          </div>
-        )}
-      </div>
+      <ScoreBar
+        thru={summary.thru}
+        holesTotal={summary.holesTotal}
+        toPar={summary.toPar}
+        netToPar={summary.netToPar}
+        strokeAdvantage={team.strokeAdvantage || 0}
+      />
 
       {!canEdit && (
         <div className="card">
