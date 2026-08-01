@@ -44,12 +44,21 @@ everyone via Firebase.
 4. In Firestore, go to the **Rules** tab, replace the contents with everything in
    [`firestore.rules`](./firestore.rules) from this repo, and click **Publish**.
 5. Go to **Project settings** (gear icon) -> **General**, scroll to "Your apps", click the web
-   icon (`</>`) to register a new web app (any nickname), and copy the `firebaseConfig` values
-   shown (`apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`, `appId`).
+   icon (`</>`) to register a new web app (any nickname), and copy just two values from the
+   `firebaseConfig` block it shows: **`apiKey`** and **`projectId`**.
+
+   Firebase's snippet lists six fields, but this app only uses those two — `apiKey` authorizes
+   anonymous sign-in and `projectId` picks the Firestore database. The rest are for features
+   this app doesn't use (`storageBucket` = Cloud Storage, `messagingSenderId` = push
+   notifications, `appId` = Analytics), and `authDomain` only matters for OAuth popup flows,
+   which went away with the admin login — it's derived from `projectId` automatically.
+
+   Use the copy button rather than retyping: one wrong character in the API key produces a
+   confusing `API key not valid` error.
 
 ### 2. Configure the app
 
-Copy `.env.example` to `.env` and paste in the six values from step 1.5:
+Copy `.env.example` to `.env` and paste in the two values from step 1.5:
 
 ```
 cp .env.example .env
@@ -65,14 +74,10 @@ npm run dev
 ### 3. Configure GitHub Pages + Actions secrets
 
 1. In the GitHub repo, go to **Settings -> Pages** and set **Source** to "GitHub Actions".
-2. Go to **Settings -> Secrets and variables -> Actions** and add each of these as a repository
-   secret, using the same Firebase config values from step 1.5:
+2. Go to **Settings -> Secrets and variables -> Actions** and add these two repository secrets,
+   using the same values from step 1.5:
    - `VITE_FIREBASE_API_KEY`
-   - `VITE_FIREBASE_AUTH_DOMAIN`
    - `VITE_FIREBASE_PROJECT_ID`
-   - `VITE_FIREBASE_STORAGE_BUCKET`
-   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
-   - `VITE_FIREBASE_APP_ID`
 3. Push/merge to `main` — `.github/workflows/deploy.yml` builds and deploys automatically. The
    site will be published at `https://<your-github-username>.github.io/phipsigolftourney/`.
 
