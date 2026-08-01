@@ -1,10 +1,10 @@
 import { HashRouter, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
+import BottomNav from './components/BottomNav'
 import Home from './pages/Home'
 import TeamView from './pages/TeamView'
 import Leaderboard from './pages/Leaderboard'
-import CourseInfo from './pages/CourseInfo'
-import Admin from './pages/Admin'
+import Info from './pages/Info'
 import SetupNeeded from './pages/SetupNeeded'
 import { isFirebaseConfigured } from './firebase'
 import { MyTeamProvider } from './context/MyTeamContext'
@@ -24,13 +24,15 @@ function App() {
     <HashRouter>
       <MyTeamProvider>
         <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/team/:teamId" element={<TeamView />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/course" element={<CourseInfo />} />
-          <Route path="/admin" element={<Admin />} />
-        </Routes>
+        <div className="app-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/team/:teamId" element={<TeamView />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/info" element={<Info />} />
+          </Routes>
+        </div>
+        <BottomNav />
       </MyTeamProvider>
     </HashRouter>
   )

@@ -28,12 +28,7 @@ export default function Leaderboard() {
 
   return (
     <div className="container stack">
-      <div className="page-title">
-        <h1>Leaderboard</h1>
-        <Link className="btn btn-sm" to="/">
-          Teams
-        </Link>
-      </div>
+      <h1>Leaderboard</h1>
       <p className="muted">
         Ranked by net score to par ({HOLES.length} holes, bogey-max scoring). Group 6 plays with a
         3-stroke advantage.

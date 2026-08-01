@@ -1,26 +1,32 @@
 # KAK Invitational — Live Scoring
 
 A live, mobile-first scoring and leaderboard app for the 2026 KAK Invitational (4-man scramble)
-at St. Andrews Golf Club, Overland Park KS. Players tap into their group's scorecard from their
-phones, scores sync live to everyone via Firebase, and the admin account can seed/reset the
-tournament.
+at St. Andrews Golf Club, Overland Park KS. Players pick their team and their name from the
+roster, and whoever picks first for a team becomes its scorekeeper — scores sync live to
+everyone via Firebase.
 
 - **Format:** 4-man scramble, Blue tees (5,986 yds, par 71)
 - **Scoring:** bogey is the max recorded score on any hole
 - **7 groups / tee times**, Group 6 plays with a 3-stroke advantage
 - **Leaderboard:** live, ranked by net score to par
-- **Admin:** Google sign-in restricted to `mccann79@gmail.com`
+- **Three tabs:** Scorecard, Leaderboard, Info — built for a phone in your pocket on the course
 
 ## How it works
 
 - **GitHub Pages** hosts the static built app (free, public).
 - **Firebase** (free tier) provides the live database (Firestore) that syncs scores across every
-  phone in real time, plus Google sign-in for the admin account. GitHub Pages alone can't do
-  this — it only serves static files — so a small free backend is required for genuinely live,
-  cross-phone score tracking.
-- Regular players don't need an account. Tapping a group and entering a name silently signs that
-  phone in anonymously and "claims" the team as its scorekeeper. The admin is the only one who
-  signs in with a real Google account.
+  phone in real time. GitHub Pages alone can't do this — it only serves static files — so a
+  small free backend is required for genuinely live, cross-phone score tracking.
+- There's no login. Opening the site silently signs your phone in anonymously (just enough for
+  Firestore to tell "some visitor" apart from "nobody"), and tapping your team + name is what
+  claims scorekeeping — no admin, no accounts.
+- The **first person to pick a name for a team becomes its scorekeeper** and is the only one who
+  can enter scores for that team on their phone. Anyone can view any team's scorecard live. The
+  current scorekeeper can hand the role off to a teammate at any time (**Hand off to teammate**
+  on their scorecard), and anyone can take over an already-claimed team if needed (e.g. the
+  original phone died) via **That's not me — take over**.
+- The next time the same phone opens the site, it jumps straight to that team's scorecard instead
+  of showing the team list.
 
 ## One-time setup
 
@@ -28,8 +34,8 @@ tournament.
 
 1. Go to the [Firebase console](https://console.firebase.google.com/) and create a new project
    (any name, e.g. "kak-invitational"). You can disable Google Analytics, it's not needed.
-2. In the project, go to **Build -> Authentication -> Get started**. Enable the **Google** and
-   **Anonymous** sign-in providers.
+2. Go to **Build -> Authentication -> Get started** and enable the **Anonymous** sign-in
+   provider (only this one — there's no admin login in this app).
 3. Go to **Build -> Firestore Database -> Create database**. Start in production mode, pick any
    region.
 4. In Firestore, go to the **Rules** tab, replace the contents with everything in
@@ -37,8 +43,6 @@ tournament.
 5. Go to **Project settings** (gear icon) -> **General**, scroll to "Your apps", click the web
    icon (`</>`) to register a new web app (any nickname), and copy the `firebaseConfig` values
    shown (`apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`, `appId`).
-6. Still in Project settings, go to **Authentication -> Settings -> Authorized domains** and add
-   `<your-github-username>.github.io` (needed for Google sign-in to work once deployed).
 
 ### 2. Configure the app
 
@@ -69,39 +73,30 @@ npm run dev
 3. Push/merge to `main` — `.github/workflows/deploy.yml` builds and deploys automatically. The
    site will be published at `https://<your-github-username>.github.io/phipsigolftourney/`.
 
-### 4. Seed the tournament
-
-1. Open the deployed site, go to **Admin**, and sign in with `mccann79@gmail.com`.
-2. Click **Seed tournament teams** to create the 7 groups from the tee sheet.
-3. Optionally set the tournament date under **Tournament settings**.
-
-From then on, players open the site, tap **Teams**, pick their group, enter their name, and start
-entering scores. Everyone can watch the **Leaderboard** update live.
-
-## Admin capabilities
-
-Signed in as `mccann79@gmail.com` on the **Admin** page:
-
-- Seed/re-seed the 7 team rosters and tee times
-- Reset all scores & claims (start the tournament over)
-- Reset an individual team's scores/claim
-- Unlock a team's claim (e.g. if the wrong phone claimed a group)
-- Edit the tournament name/date shown on the Teams and Course pages
+That's it — the first visit to the deployed site automatically creates the 7 teams in Firestore
+from the roster in `src/data/course.js`. No seeding step, no sign-in.
 
 ## A note on security
 
-Team rosters, tee times, and tournament settings are locked to the admin account by
-[`firestore.rules`](./firestore.rules). Score entry itself is intentionally open to anyone with
-the link once they're on a device (no per-player login) — this fits a small trusted group playing
-together, but it does mean a determined player could edit scores outside the app's UI. That's a
-reasonable trade-off for a casual tournament; it isn't meant to withstand an adversarial public
-audience.
+There's no admin account, so anyone with the link can, in principle, edit any team's scores from
+outside the app's UI (e.g. browser devtools) — [`firestore.rules`](./firestore.rules) only
+prevents changing a team's roster/tee-time/handicap fields after it's created, not who can enter
+scores. That's an intentional trade-off for a small trusted group playing together, not something
+meant to withstand an adversarial public audience.
 
-## Editing the roster / course data
+## Making changes later
 
-`src/data/course.js` holds the hole-by-hole par/yardage from the scorecard and the seed data for
-the 7 groups (players, tee times, Ghin averages, stroke advantage). Edit it and re-run **Seed
-tournament teams** (or **Re-seed rosters & tee times**) in Admin to push changes live.
+There's no admin panel by design — for anything beyond normal scoring, edit directly:
+
+- **Roster, tee times, handicaps, stroke advantage:** edit `src/data/course.js` and redeploy.
+  This only affects the *first* time a team is created (Firestore is the source of truth after
+  that) — to apply a change to an already-created team, edit that document directly in the
+  Firebase console (Firestore Database -> Data), which bypasses the security rules entirely.
+- **Reset a team's scores/scorekeeper, or wipe everything:** in the Firebase console, edit or
+  delete documents in the `teams` collection directly. Deleting a document doesn't bring it back
+  automatically — re-seeding only happens when the whole `teams` collection is empty.
+- **Tournament date:** set `TOURNAMENT.date` in `src/data/course.js` (e.g. `'2026-08-15'`) and
+  redeploy.
 
 ## Tech stack
 

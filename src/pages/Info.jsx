@@ -1,23 +1,15 @@
-import { Link } from 'react-router-dom'
 import { useTeams } from '../hooks/useTeams'
-import { useTournamentSettings } from '../hooks/useTournamentSettings'
 import { COURSE, TOURNAMENT, RULES, GROUPS } from '../data/course'
 import Scorecard from '../components/Scorecard'
-import './CourseInfo.css'
+import './Info.css'
 
-export default function CourseInfo() {
+export default function Info() {
   const { teams } = useTeams()
-  const { settings } = useTournamentSettings()
   const groups = teams.length ? teams : GROUPS
 
   return (
     <div className="container stack">
-      <div className="page-title">
-        <h1>{settings.name || TOURNAMENT.name}</h1>
-        <Link className="btn btn-sm" to="/">
-          Teams
-        </Link>
-      </div>
+      <h1>{TOURNAMENT.name}</h1>
 
       <div className="card stack">
         <h2>{COURSE.name}</h2>
@@ -32,9 +24,9 @@ export default function CourseInfo() {
           {COURSE.tee.slope}, {COURSE.tee.yardage.toLocaleString()} yards. Format:{' '}
           {TOURNAMENT.format}.
         </p>
-        {settings.date && (
+        {TOURNAMENT.date && (
           <p className="muted">
-            {new Date(settings.date + 'T00:00:00').toLocaleDateString(undefined, {
+            {new Date(TOURNAMENT.date + 'T00:00:00').toLocaleDateString(undefined, {
               weekday: 'long',
               year: 'numeric',
               month: 'long',

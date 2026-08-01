@@ -3,40 +3,28 @@ rules_version = '2';
 // Paste this into the Firebase Console: Firestore Database -> Rules -> Publish.
 // See README.md for the full setup walkthrough.
 //
-// Model: every visitor (including players) is silently signed in anonymously
-// (see src/firebase.js), and the tournament admin signs in for real with
-// Google. That lets us tell "some visitor" apart from "nobody" without
-// making players create accounts, while still locking down the things that
-// matter (team rosters, tee times, tournament settings, full resets/deletes)
-// to the one admin email.
-//
-// Any signed-in visitor (anonymous included) can update a team's `scores`
-// and `claimedBy` fields - that's the shared, collaborative part of the app
-// for a small trusted group playing together. Everything else on a team
-// document, and the whole `settings` collection, requires the admin account.
+// There's no admin account in this app — every visitor is silently signed in
+// anonymously (see src/firebase.js), which is enough to tell "some visitor"
+// apart from "nobody" without anyone creating an account. Any signed-in
+// visitor can create the initial team documents (auto-seeding, see
+// ensureTeamsSeeded in src/data/firestoreApi.js) and can update a team's
+// `scores` and `claimedBy` fields — that's the self-service scorekeeper
+// model. Roster fields (players, teeTime, ghinAvg, strokeAdvantage) can only
+// be set at creation time, never changed afterward by a client — if you need
+// to edit the roster later, do it directly in the Firebase console, which
+// bypasses these rules entirely.
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'mccann79@gmail.com';
-    }
-
     function isSignedIn() {
       return request.auth != null;
     }
 
-    match /settings/{doc} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
     match /teams/{teamId} {
       allow read: if true;
-      allow create: if isAdmin();
-      allow delete: if isAdmin();
-      allow update: if isAdmin() || (
-        isSignedIn() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scores', 'claimedBy', 'updatedAt'])
-      );
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scores', 'claimedBy', 'updatedAt']);
+      allow delete: if false;
     }
 
     match /{document=**} {
