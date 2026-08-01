@@ -1,13 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import {
-  connectAuthEmulator,
-  getAuth,
-  onAuthStateChanged,
-  signInAnonymously,
-  signInWithPopup,
-  signOut,
-  GoogleAuthProvider,
-} from 'firebase/auth'
+import { connectAuthEmulator, getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth'
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
@@ -35,22 +27,12 @@ if (isFirebaseConfigured) {
     connectFirestoreEmulator(db, '127.0.0.1', 8080)
   }
 
-  // Every visitor (players included) gets a silent anonymous auth session.
-  // This is what lets Firestore security rules tell "some visitor" apart
-  // from "nobody" without asking players to create an account.
+  // Every visitor gets a silent anonymous auth session. This is what lets
+  // Firestore security rules tell "some visitor" apart from "nobody"
+  // without asking anyone to create an account or sign in.
   onAuthStateChanged(auth, (user) => {
     if (!user) signInAnonymously(auth).catch((err) => console.error('Anonymous sign-in failed', err))
   })
 }
 
 export { app, auth, db }
-
-const googleProvider = new GoogleAuthProvider()
-
-export function signInWithGoogle() {
-  return signInWithPopup(auth, googleProvider)
-}
-
-export function signOutAdmin() {
-  return signOut(auth).finally(() => signInAnonymously(auth))
-}

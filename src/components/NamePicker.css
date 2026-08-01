@@ -1,0 +1,35 @@
+.name-picker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.name-picker-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.name-picker-option:active {
+  background: var(--surface-alt);
+}
+
+.name-picker-current {
+  border-color: var(--brand-green);
+  background: var(--brand-green-soft);
+  color: var(--brand-green);
+}
+
+.name-picker-check {
+  color: var(--brand-green);
+  font-weight: 800;
+}

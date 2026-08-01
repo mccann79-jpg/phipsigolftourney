@@ -1,22 +1,21 @@
 import { useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useTeams } from '../hooks/useTeams'
 import { useMyTeam } from '../context/MyTeamContext'
 import Scorecard from '../components/Scorecard'
 import HoleEntrySheet from '../components/HoleEntrySheet'
 import ScoreBar from '../components/ScoreBar'
+import NamePicker from '../components/NamePicker'
 import { claimTeam, setHoleScore, clearHoleScore } from '../data/firestoreApi'
 import { netSummary } from '../data/scoring'
-import './Home.css'
+import './TeamView.css'
 
 export default function TeamView() {
   const { teamId } = useParams()
-  const navigate = useNavigate()
   const { teams, loading } = useTeams()
-  const { myTeamId, myName, setMyTeamId, setMyName } = useMyTeam()
+  const { myTeamId, setMyTeamId, setMyName } = useMyTeam()
   const [selectedHole, setSelectedHole] = useState(null)
-  const [claiming, setClaiming] = useState(false)
-  const [nameInput, setNameInput] = useState(myName)
+  const [pickingName, setPickingName] = useState(false)
 
   const team = teams.find((t) => t.id === teamId)
   const isMine = myTeamId === teamId
@@ -35,25 +34,21 @@ export default function TeamView() {
   const summary = netSummary(scores, team.strokeAdvantage || 0)
   const canEdit = isMine
 
-  const claimAndEdit = async (e) => {
-    e.preventDefault()
-    const trimmed = nameInput.trim()
-    if (!trimmed) return
-    await claimTeam(team.id, trimmed)
-    setMyName(trimmed)
+  const pickName = async (name) => {
+    await claimTeam(team.id, name)
+    setMyName(name)
     setMyTeamId(team.id)
-    setClaiming(false)
+    setPickingName(false)
   }
 
   return (
     <div className="container stack">
       <div className="page-title">
         <h1>Group {team.group}</h1>
-        <Link className="btn btn-sm" to="/leaderboard">
-          Leaderboard
-        </Link>
       </div>
-      <p className="muted">{team.teeTime} tee time · {team.players.join(', ')}</p>
+      <p className="muted">
+        {team.teeTime} tee time · {team.players.join(', ')}
+      </p>
 
       <ScoreBar
         thru={summary.thru}
@@ -63,53 +58,50 @@ export default function TeamView() {
         strokeAdvantage={team.strokeAdvantage || 0}
       />
 
-      {!canEdit && (
-        <div className="card">
+      {!canEdit && !pickingName && (
+        <div className="card stack">
           {team.claimedBy ? (
             <p>
-              <strong>{team.claimedBy.name}</strong> is tracking scores for this group on their
-              phone. You're viewing live.
+              <strong>{team.claimedBy.name}</strong> is scoring for this group. You're viewing live.
             </p>
           ) : (
-            <p>No one has claimed this group yet.</p>
+            <p>No one has picked up scoring for this group yet.</p>
           )}
-          {!claiming && (
-            <button className="btn btn-primary btn-sm" onClick={() => setClaiming(true)}>
-              {team.claimedBy ? 'Take over scoring' : 'Score for this team'}
-            </button>
-          )}
-          {claiming && (
-            <form className="claim-form" onSubmit={claimAndEdit}>
-              <input
-                type="text"
-                placeholder="Your name"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                autoFocus
-              />
-              <button className="btn btn-primary btn-sm" type="submit" disabled={!nameInput.trim()}>
-                Confirm
-              </button>
-            </form>
-          )}
+          <button className="btn btn-primary btn-sm" onClick={() => setPickingName(true)}>
+            {team.claimedBy ? "That's not me — take over" : "That's me, I'll score"}
+          </button>
+        </div>
+      )}
+
+      {!canEdit && pickingName && (
+        <div className="card stack">
+          <p className="muted">Tap your name:</p>
+          <NamePicker players={team.players} currentName={team.claimedBy?.name} onSelect={pickName} />
+        </div>
+      )}
+
+      {canEdit && !pickingName && (
+        <div className="card team-scoring-as">
+          <span>Scoring as {team.claimedBy?.name}</span>
+          <button className="btn btn-sm" onClick={() => setPickingName(true)}>
+            Hand off to teammate
+          </button>
+        </div>
+      )}
+
+      {canEdit && pickingName && (
+        <div className="card stack">
+          <p className="muted">Hand scoring off to:</p>
+          <NamePicker players={team.players} currentName={team.claimedBy?.name} onSelect={pickName} />
+          <button className="btn btn-sm" onClick={() => setPickingName(false)}>
+            Cancel
+          </button>
         </div>
       )}
 
       {canEdit && <p className="muted">Tap any hole to enter or change your team's score.</p>}
 
       <Scorecard scores={scores} onEditHole={canEdit ? setSelectedHole : undefined} />
-
-      {canEdit && (
-        <button
-          className="btn btn-sm"
-          onClick={() => {
-            setMyTeamId(null)
-            navigate('/')
-          }}
-        >
-          Done scoring / switch team
-        </button>
-      )}
 
       {selectedHole && (
         <HoleEntrySheet

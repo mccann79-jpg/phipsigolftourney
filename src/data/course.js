@@ -18,6 +18,8 @@ export const TOURNAMENT = {
   name: '2026 KAK Invitational',
   format: '4-Man Scramble',
   year: 2026,
+  // Optional — set to an ISO date ('2026-08-15') to show it on the site.
+  date: null,
 }
 
 export const RULES = [
@@ -67,9 +69,12 @@ export function maxScore(par) {
   return par + 1
 }
 
-// Seed data for the 7 tee-time groups. This is written to Firestore once by
-// the admin (Reset / Seed Tournament Data button) and from then on the live
-// documents in Firestore are the source of truth.
+// Seed data for the 7 tee-time groups. The app writes this into Firestore
+// automatically the first time anyone loads it with an empty `teams`
+// collection; after that, the live documents in Firestore are the source of
+// truth. To change the roster later, edit this file and delete the `teams`
+// collection in the Firebase console so it re-seeds, or edit the documents
+// there directly.
 export const GROUPS = [
   { id: 'group-1', group: 1, teeTime: '10:03 AM', players: ['Alex Samuelson', 'Nathan Guthrie', 'Brian Euston', 'Brendan McCann'], ghinAvg: 15, strokeAdvantage: 0 },
   { id: 'group-2', group: 2, teeTime: '10:12 AM', players: ['Jake Vance', 'Patrick Delaney', 'Nick Vance', 'Will Arnold'], ghinAvg: 17, strokeAdvantage: 0 },
@@ -79,5 +84,3 @@ export const GROUPS = [
   { id: 'group-6', group: 6, teeTime: '10:48 AM', players: ['Zach Webb', 'Thad Blevins', 'Peter Mavec', 'Martin Higgins'], ghinAvg: 28, strokeAdvantage: 3 },
   { id: 'group-7', group: 7, teeTime: '10:57 AM', players: ['Jacob Ferris', 'Cole Baber', 'John Sears', 'Connor DeWitt'], ghinAvg: 18, strokeAdvantage: 0 },
 ]
-
-export const ADMIN_EMAIL = 'mccann79@gmail.com'
