@@ -1,0 +1,72 @@
+.leaderboard-table {
+  padding: 0.4rem;
+}
+
+.lb-row {
+  display: grid;
+  grid-template-columns: 2rem 1fr 3rem 3.2rem 3.2rem;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.4rem;
+  text-align: left;
+}
+
+.lb-head {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.lb-row-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  border-radius: 0;
+}
+.lb-row-btn:hover {
+  background: var(--surface-alt);
+}
+
+.lb-pos {
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.lb-team {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-weight: 700;
+}
+.lb-team .badge {
+  margin-left: 0.35rem;
+}
+
+.lb-players {
+  font-weight: 400;
+  font-size: 0.72rem;
+}
+
+.lb-thru,
+.lb-score,
+.lb-net {
+  font-weight: 700;
+  text-align: center;
+}
+
+.lb-net {
+  color: var(--brand-dark);
+}
+
+.lb-detail {
+  padding: 0.75rem 0.4rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}

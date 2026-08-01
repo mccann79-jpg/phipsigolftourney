@@ -1,0 +1,57 @@
+.hero-card {
+  text-align: center;
+  align-items: center;
+}
+
+.hero-links {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.team-card {
+  text-align: left;
+}
+
+.team-card-mine {
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 2px var(--brand-green-soft);
+}
+
+.team-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.team-card-top h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.15rem;
+}
+
+.team-players {
+  font-size: 0.9rem;
+}
+
+.team-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.claim-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.claim-warning {
+  color: var(--danger);
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}

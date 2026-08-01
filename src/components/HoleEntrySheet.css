@@ -1,0 +1,73 @@
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+}
+
+.sheet {
+  background: var(--surface);
+  width: 100%;
+  max-width: 720px;
+  border-radius: 16px 16px 0 0;
+  padding: 1rem;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.sheet-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.sheet-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 0.5rem;
+}
+
+.sheet-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.6rem 0.3rem;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--surface-alt);
+  cursor: pointer;
+}
+
+.sheet-option-num {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.sheet-option-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.sheet-option-selected {
+  border-color: var(--brand-green);
+}
+
+.sheet-option.sc-birdie .sheet-option-num,
+.sheet-option.sc-eagle .sheet-option-num {
+  color: #d64545;
+}
+.sheet-option.sc-bogey .sheet-option-num {
+  color: #2f6fb5;
+}
+
+.sheet-clear {
+  margin-top: 0.75rem;
+  width: 100%;
+}
