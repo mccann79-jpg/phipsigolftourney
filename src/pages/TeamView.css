@@ -6,3 +6,9 @@
   flex-wrap: wrap;
   font-weight: 600;
 }
+
+.team-scoring-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}

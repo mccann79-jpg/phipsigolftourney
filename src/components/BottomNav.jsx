@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 
 const TABS = [
-  { to: '/', label: 'Scorecard', icon: '⛳', match: (path) => path === '/' || path.startsWith('/team/') },
+  { to: '/', label: 'Scorecard', icon: '⛳', match: (path) => path === '/' || path.startsWith('/team') },
   { to: '/leaderboard', label: 'Leaderboard', icon: '🏆', match: (path) => path.startsWith('/leaderboard') },
   { to: '/info', label: 'Info', icon: 'ℹ️', match: (path) => path.startsWith('/info') },
 ]

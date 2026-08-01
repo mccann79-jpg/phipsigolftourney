@@ -27,6 +27,7 @@ function App() {
         <div className="app-content">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/teams" element={<Home browse />} />
             <Route path="/team/:teamId" element={<TeamView />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/info" element={<Info />} />
