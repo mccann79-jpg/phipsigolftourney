@@ -27,17 +27,11 @@ jobs:
 
       - run: npm ci
 
+      # No secrets needed: the Firebase config lives in src/firebaseConfig.js
+      # and is committed. Those values are public project identifiers, not
+      # credentials — see the comment in that file.
       - name: Build
         run: npm run build
-        env:
-          # Only these two are required - see the comment in src/firebase.js.
-          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          # Optional overrides; safe to leave unset.
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
       - uses: actions/upload-pages-artifact@v3
         with:

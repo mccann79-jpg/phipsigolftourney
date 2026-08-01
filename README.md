@@ -44,25 +44,19 @@ everyone via Firebase.
 4. In Firestore, go to the **Rules** tab, replace the contents with everything in
    [`firestore.rules`](./firestore.rules) from this repo, and click **Publish**.
 5. Go to **Project settings** (gear icon) -> **General**, scroll to "Your apps", click the web
-   icon (`</>`) to register a new web app (any nickname), and copy just two values from the
-   `firebaseConfig` block it shows: **`apiKey`** and **`projectId`**.
+   icon (`</>`) to register a new web app (any nickname). It shows a `firebaseConfig = { ... }`
+   block — hit the copy button.
 
-   Firebase's snippet lists six fields, but this app only uses those two — `apiKey` authorizes
-   anonymous sign-in and `projectId` picks the Firestore database. The rest are for features
-   this app doesn't use (`storageBucket` = Cloud Storage, `messagingSenderId` = push
-   notifications, `appId` = Analytics), and `authDomain` only matters for OAuth popup flows,
-   which went away with the admin login — it's derived from `projectId` automatically.
+### 2. Paste the config into the app
 
-   Use the copy button rather than retyping: one wrong character in the API key produces a
-   confusing `API key not valid` error.
+Open [`src/firebaseConfig.js`](./src/firebaseConfig.js) and replace the `firebaseConfig` object
+with the one you just copied, then commit. That's the entire configuration step — no environment
+variables, no repository secrets.
 
-### 2. Configure the app
-
-Copy `.env.example` to `.env` and paste in the two values from step 1.5:
-
-```
-cp .env.example .env
-```
+Those values are **not secrets**. They identify your Firebase project the way a public URL does,
+and they're visible in the built JavaScript of any deployed Firebase web app whether you commit
+them or not; Google [documents this explicitly](https://firebase.google.com/docs/projects/api-keys).
+Access control comes from [`firestore.rules`](./firestore.rules), not from hiding the config.
 
 For local development:
 
@@ -71,14 +65,10 @@ npm install
 npm run dev
 ```
 
-### 3. Configure GitHub Pages + Actions secrets
+### 3. Turn on GitHub Pages
 
 1. In the GitHub repo, go to **Settings -> Pages** and set **Source** to "GitHub Actions".
-2. Go to **Settings -> Secrets and variables -> Actions** and add these two repository secrets,
-   using the same values from step 1.5:
-   - `VITE_FIREBASE_API_KEY`
-   - `VITE_FIREBASE_PROJECT_ID`
-3. Push/merge to `main` — `.github/workflows/deploy.yml` builds and deploys automatically. The
+2. Push/merge to `main` — `.github/workflows/deploy.yml` builds and deploys automatically. The
    site will be published at `https://<your-github-username>.github.io/phipsigolftourney/`.
 
 That's it — the first visit to the deployed site automatically creates the 7 teams in Firestore

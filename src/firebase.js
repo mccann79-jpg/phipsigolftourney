@@ -2,24 +2,21 @@ import { initializeApp } from 'firebase/app'
 import { connectAuthEmulator, getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth'
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore'
 
-// This app only needs two values from the Firebase console:
-//   apiKey    - authenticates the anonymous sign-in request
-//   projectId - identifies which Firestore database to talk to
-// The other four fields in Firebase's snippet cover features we don't use:
-// storageBucket (Cloud Storage), messagingSenderId (push notifications) and
-// appId (Analytics). authDomain only matters for OAuth popup/redirect
-// flows, which went away with the admin Google sign-in, and it follows a
-// fixed pattern anyway - so derive it rather than making someone copy it.
-// Each is still overridable by env var for anyone with a custom setup.
-const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID
+import { firebaseConfig as fileConfig } from './firebaseConfig'
 
+// Config comes from src/firebaseConfig.js — paste the block from the
+// Firebase console there and commit it. Env vars still win if set, so a
+// fork can supply its own project without editing the file.
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  projectId,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || `${projectId}.firebaseapp.com`,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || undefined,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || undefined,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || undefined,
+  ...fileConfig,
+  ...(import.meta.env.VITE_FIREBASE_API_KEY && { apiKey: import.meta.env.VITE_FIREBASE_API_KEY }),
+  ...(import.meta.env.VITE_FIREBASE_PROJECT_ID && {
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  }),
+  ...(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN && {
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  }),
 }
 
 export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId)
