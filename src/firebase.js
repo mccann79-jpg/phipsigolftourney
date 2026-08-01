@@ -14,14 +14,19 @@ const firebaseConfig = {
 export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId)
 
 let app, auth, db
-let resolveAuthReady
-// Resolves once anonymous sign-in has actually completed. Writes that need
-// auth (like auto-seeding teams) should wait on this instead of firing
-// immediately on mount, otherwise they can lose the race against
+let settleAuth
+// Settles once anonymous sign-in completes, and REJECTS if it fails. Writes
+// that need auth (like auto-seeding teams) await this rather than firing
+// immediately on mount, so they can't lose the race against
 // signInAnonymously on a slow connection and fail with permission-denied.
-export const authReady = new Promise((resolve) => {
-  resolveAuthReady = resolve
+// It must always settle: a promise that never resolves would leave the app
+// stuck on "Loading teams…" forever with no visible explanation.
+export const authReady = new Promise((resolve, reject) => {
+  settleAuth = { resolve, reject }
 })
+// Callers attach their own handlers; this keeps a rejected authReady from
+// surfacing as an unhandled promise rejection when nothing is awaiting yet.
+authReady.catch(() => {})
 
 if (isFirebaseConfigured) {
   app = initializeApp(firebaseConfig)
@@ -39,11 +44,17 @@ if (isFirebaseConfigured) {
   // Firestore security rules tell "some visitor" apart from "nobody"
   // without asking anyone to create an account or sign in.
   onAuthStateChanged(auth, (user) => {
-    if (!user) signInAnonymously(auth).catch((err) => console.error('Anonymous sign-in failed', err))
-    else resolveAuthReady()
+    if (user) {
+      settleAuth.resolve(user)
+      return
+    }
+    signInAnonymously(auth).catch((err) => {
+      console.error('Anonymous sign-in failed', err)
+      settleAuth.reject(err)
+    })
   })
 } else {
-  resolveAuthReady()
+  settleAuth.resolve(null)
 }
 
 export { app, auth, db }

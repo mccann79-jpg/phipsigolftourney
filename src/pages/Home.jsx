@@ -48,8 +48,22 @@ export default function Home({ browse = false }) {
 
       <p className="muted">Tap your team, then tap your name to start scoring.</p>
 
-      {loading && <p className="muted">Loading teams…</p>}
+      {loading && !error && <p className="muted">Loading teams…</p>}
       {error === 'not-configured' && <p className="muted">Firebase isn't configured yet — see README.md.</p>}
+      {error?.startsWith('auth-failed') && (
+        <div className="card stack">
+          <p>
+            <strong>Couldn't connect to Firebase.</strong>
+          </p>
+          <p className="muted">
+            Two things to check in the Firebase console: that the six{' '}
+            <code>VITE_FIREBASE_*</code> GitHub secrets exactly match Project settings → General →
+            Your apps (copy them with the copy button rather than retyping), and that
+            Authentication → Sign-in method has <strong>Anonymous</strong> enabled.
+          </p>
+          <p className="muted">({error.replace('auth-failed:', 'Firebase error: ')})</p>
+        </div>
+      )}
       {error?.startsWith('seed-failed') && (
         <div className="card stack">
           <p>
@@ -63,10 +77,12 @@ export default function Home({ browse = false }) {
           <p className="muted">({error.replace('seed-failed:', 'Firestore error: ')})</p>
         </div>
       )}
-      {!loading && error && error !== 'not-configured' && !error.startsWith('seed-failed') && (
-        <p className="muted">Couldn't load teams: {error}</p>
-      )}
-      {!loading && !error && teams.length === 0 && <p className="muted">Setting up the tournament…</p>}
+      {!loading &&
+        error &&
+        error !== 'not-configured' &&
+        !error.startsWith('seed-failed') &&
+        !error.startsWith('auth-failed') && <p className="muted">Couldn't load teams: {error}</p>}
+      {!error && teams.length === 0 && !loading && <p className="muted">Setting up the tournament…</p>}
 
       {teams.map((team) => (
         <TeamCard key={team.id} team={team} isMine={team.id === myTeamId} />
