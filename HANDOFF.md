@@ -63,7 +63,8 @@ Club, Overland Park KS, blue tees, par 71).
 - Three tabs, fixed bottom nav, mobile-first: **Scorecard / Leaderboard / Info**
 - Player opens the site → picks their team → taps their name → becomes that team's **scorekeeper**
 - Only the scorekeeper can enter scores for their team; everyone else sees it live
-- Scorekeeper can **hand off to a teammate** or **leave team**; anyone can **take over** a claimed team
+- Scorekeeper can **hand off to a teammate** or **leave team**; nobody else can take over a team
+  while it's claimed — enforced by `firestore.rules`, not just hidden in the UI
 - Returning visits **skip straight to your team's scorecard** (team stored in `localStorage`)
 - Scores are **capped at bogey** (par + 1) per tournament rules — enforced in the entry sheet
 - **Group 6 gets a 3-stroke advantage**, applied automatically to net score and leaderboard rank
@@ -86,7 +87,7 @@ Firebase (Firestore + anonymous Auth). Deployed by GitHub Actions to GitHub Page
 | `src/pages/Home.jsx` | Scorecard tab root — redirects to your team if claimed, else shows team list. `?browse` mode via `/teams`. |
 | `src/pages/TeamView.jsx` | The scorecard: score entry, claim / hand off / leave / take over. |
 | `src/pages/Leaderboard.jsx` | Ranked by net-to-par, expandable per-team scorecards. |
-| `src/pages/Info.jsx` | Course address, tee times, blank scorecard, rules. |
+| `src/pages/Info.jsx` | Course address, tee times, rules. |
 | `firestore.rules` | **Must be published to the Firebase console manually.** |
 
 ### Firestore data model
@@ -194,8 +195,9 @@ Nothing here is blocking; the app is feature-complete for the outing.
 - **No offline support.** Cell service at the course may be poor. Firestore's local cache handles
   brief drops, but a persistent-cache/PWA setup would be more robust. There's a 15s timeout that
   surfaces a clear error rather than spinning forever.
-- **Scorekeeper lock is advisory.** It's per-device via `localStorage`; anyone can take over a
-  team, and a determined person could write scores via devtools. Intentional trade-off — see the
+- **Claiming a team under a teammate's name is on the honor system.** There's no real login, so
+  `firestore.rules` can stop a *different* team from taking over your claim, but it can't verify
+  that "Zach Webb" tapping his own name is actually Zach Webb. Intentional trade-off — see the
   security note in `README.md`.
 - **No per-player individual scores.** Team scramble score only, by design.
 - **Bundle is ~780 KB** (mostly the Firebase SDK). Fine over wifi, could be code-split if it

@@ -74,13 +74,17 @@ export default function TeamView() {
           {team.claimedBy ? (
             <p>
               <strong>{team.claimedBy.name}</strong> is scoring for this group. You're viewing live.
+              Only they can hand the role off — if their phone is stuck or lost, ask an organizer
+              to free it up in the Firebase console.
             </p>
           ) : (
-            <p>No one has picked up scoring for this group yet.</p>
+            <>
+              <p>No one has picked up scoring for this group yet.</p>
+              <button className="btn btn-primary btn-sm" onClick={() => setPickingName(true)}>
+                That's me, I'll score
+              </button>
+            </>
           )}
-          <button className="btn btn-primary btn-sm" onClick={() => setPickingName(true)}>
-            {team.claimedBy ? "That's not me — take over" : "That's me, I'll score"}
-          </button>
         </div>
       )}
 

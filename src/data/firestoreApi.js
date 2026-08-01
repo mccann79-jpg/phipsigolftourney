@@ -51,11 +51,16 @@ export async function ensureTeamsSeeded(existingIds = []) {
 }
 
 // Claims a team for the given player name — used both to become scorekeeper
-// for the first time and to hand the role off to a teammate.
+// for the first time and to hand the role off to a teammate. `claimedByUid`
+// ties the claim to this browser's anonymous auth session; firestore.rules
+// only lets that same session edit `scores`/`claimedBy` again afterward, so
+// another visitor can't take over an already-claimed team.
 export async function claimTeam(teamId, name) {
+  const user = await authReady
   const ref = doc(db, TEAMS_COL, teamId)
   await updateDoc(ref, {
     claimedBy: { name, claimedAt: Date.now() },
+    claimedByUid: user.uid,
     updatedAt: serverTimestamp(),
   })
 }
@@ -66,10 +71,13 @@ export async function leaveTeam(teamId) {
   const ref = doc(db, TEAMS_COL, teamId)
   await updateDoc(ref, {
     claimedBy: null,
+    claimedByUid: null,
     updatedAt: serverTimestamp(),
   })
 }
 
+// Score edits only succeed if this browser's session is the one that holds
+// the claim (see claimTeam above) — enforced by firestore.rules.
 export async function setHoleScore(teamId, hole, strokes) {
   const ref = doc(db, TEAMS_COL, teamId)
   await updateDoc(ref, {

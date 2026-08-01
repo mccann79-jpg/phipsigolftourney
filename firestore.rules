@@ -7,11 +7,14 @@ rules_version = '2';
 // anonymously (see src/firebase.js), which is enough to tell "some visitor"
 // apart from "nobody" without anyone creating an account. Any signed-in
 // visitor can create the initial team documents (auto-seeding, see
-// ensureTeamsSeeded in src/data/firestoreApi.js) and can update a team's
-// `scores` and `claimedBy` fields — that's the self-service scorekeeper
-// model. Roster fields (players, teeTime, ghinAvg, strokeAdvantage) can only
-// be set at creation time, never changed afterward by a client — if you need
-// to edit the roster later, do it directly in the Firebase console, which
+// ensureTeamsSeeded in src/data/firestoreApi.js). Once a team is claimed
+// (`claimedBy` is non-null), only the anonymous session that claimed it
+// (`claimedByUid`) can update `scores` or `claimedBy` again — this is what
+// stops another visitor from taking over a team that already has a
+// scorekeeper. Roster fields (players, teeTime, ghinAvg, strokeAdvantage)
+// can only be set at creation time, never changed afterward by a client — if
+// you need to edit the roster later, or free up a team whose scorekeeper is
+// stuck (lost phone, etc.), do it directly in the Firebase console, which
 // bypasses these rules entirely.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -23,7 +26,8 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isSignedIn();
       allow update: if isSignedIn() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scores', 'claimedBy', 'updatedAt']);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scores', 'claimedBy', 'claimedByUid', 'updatedAt']) &&
+        (resource.data.claimedBy == null || resource.data.claimedByUid == request.auth.uid);
       allow delete: if false;
     }
 

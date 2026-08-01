@@ -23,11 +23,13 @@ everyone via Firebase.
 - The **first person to pick a name for a team becomes its scorekeeper** and is the only one who
   can enter scores for that team on their phone. Anyone can view any team's scorecard live. The
   current scorekeeper can hand the role off to a teammate at any time (**Hand off to teammate**
-  on their scorecard), and anyone can take over an already-claimed team if needed (e.g. the
-  original phone died) via **That's not me — take over**.
-- Joined the wrong team? **Leave team** releases the scorekeeper role so anyone can pick it up
-  again, and sends you back to the team list. **All teams** browses every group's scorecard
-  without giving up your own.
+  on their scorecard) — no one else can take over a team that's already claimed, so a rival team
+  can't hijack another group's scoring.
+- Joined the wrong team, or is the scorekeeper stepping away? **Leave team** releases the
+  scorekeeper role (only the current scorekeeper can do this) so anyone can pick it up again, and
+  sends you back to the team list. **All teams** browses every group's scorecard without giving
+  up your own. If a scorekeeper's phone is lost mid-round, an organizer can free the claim up in
+  the Firebase console (see below).
 - The next time the same phone opens the site, it jumps straight to that team's scorecard instead
   of showing the team list.
 
@@ -76,11 +78,15 @@ from the roster in `src/data/course.js`. No seeding step, no sign-in.
 
 ## A note on security
 
-There's no admin account, so anyone with the link can, in principle, edit any team's scores from
-outside the app's UI (e.g. browser devtools) — [`firestore.rules`](./firestore.rules) only
-prevents changing a team's roster/tee-time/handicap fields after it's created, not who can enter
-scores. That's an intentional trade-off for a small trusted group playing together, not something
-meant to withstand an adversarial public audience.
+There's no admin account — anyone with the link can view every team live, and can claim any
+*unclaimed* team. But once a team is claimed, [`firestore.rules`](./firestore.rules) ties further
+score edits and hand-offs to the anonymous auth session that claimed it, so nobody else — not
+even via browser devtools — can take over or edit another team's scores while it's actively
+claimed. Roster/tee-time/handicap fields are likewise immutable after creation. The one thing
+this can't stop is someone claiming a team under a teammate's name instead of their own — there's
+no real login, so identity within a team roster is on the honor system. That's an intentional
+trade-off for a small trusted group playing together, not something meant to withstand an
+adversarial public audience.
 
 ## Making changes later
 

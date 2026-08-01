@@ -1,6 +1,5 @@
 import { useTeams } from '../hooks/useTeams'
 import { COURSE, TOURNAMENT, RULES, GROUPS } from '../data/course'
-import Scorecard from '../components/Scorecard'
 import './Info.css'
 
 export default function Info() {
@@ -48,11 +47,6 @@ export default function Info() {
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="card stack">
-        <h2>Scorecard — Blue tees</h2>
-        <Scorecard scores={{}} />
       </div>
 
       <div className="card stack">
